@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import User from "../../models/auth/userModel.js";
 import generateToken from "../../helpers/generateToken.js";
+import bcrypt from "bcrypt";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -59,4 +60,59 @@ export const registerUser = asyncHandler(async (req, res) => {
   } else {
     res.status(400).json({ message: "Invalid user data" });
   }
+});
+
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validation
+  if (!email || !password) {
+    res.status(400).json({ message: "All fields are required" });
+    return;
+  }
+
+  const userExists = await User.findOne({ email });
+  if (!userExists) {
+    res.status(400).json({ message: "User does not exist" });
+    return;
+  }
+
+  const isMatch = await bcrypt.compare(password, userExists.password);
+  if (!isMatch) {
+    res.status(400).json({ message: "Invalid credentials" });
+    return;
+  }
+
+  const token = generateToken(userExists._id);
+
+  if (userExists && isMatch) {
+    const { _id, name, email, role, photo, bio, isVerified } = userExists;
+
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      sameSite: true,
+      secure: true,
+    });
+
+    res.status(200).json({
+      _id,
+      name,
+      email,
+      role,
+      photo,
+      bio,
+      isVerified,
+      token,
+    });
+  } else {
+    res.status(400).json({ message: "Invalid email or password" });
+  }
+});
+
+export const logOutUser = asyncHandler(async (req, res) => {
+  res.clearCookie("token");
+
+  res.status(200).json({ message: "Logged out successfully" });
 });
