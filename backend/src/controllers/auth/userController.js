@@ -125,3 +125,30 @@ export const getUser = asyncHandler(async (req, res) => {
     res.status(404).json({ message: "User not found" });
   }
 });
+
+export const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const { name, email, bio, photo } = req.body;
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.bio = req.body.bio || user.bio;
+    user.photo = req.body.photo || user.photo;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      bio: updatedUser.bio,
+      photo: updatedUser.photo,
+      isVerified: updatedUser.isVerified,
+    });
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
