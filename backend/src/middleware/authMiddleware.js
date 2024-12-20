@@ -30,3 +30,13 @@ export const protect = asyncHandler(async (req, res, next) => {
     res.status(401).json({ message: "Not authorized, please login" });
   }
 });
+
+export const adminMiddleware = asyncHandler(async (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    // If user is admin, move to the next middleware/controller
+    next();
+    return;
+  }
+
+  res.status(403).json({ message: "Access denied" });
+});
