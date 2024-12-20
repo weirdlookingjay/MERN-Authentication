@@ -5,6 +5,7 @@ import {
   logOutUser,
   registerUser,
   updateUser,
+  userLoginStatus,
 } from "../controllers/auth/userController.js";
 import {
   adminMiddleware,
@@ -28,5 +29,8 @@ router.post("/logout", logOutUser);
 // admin routes
 router.delete("/admin/users/:id", protect, adminMiddleware, deleteUser);
 router.get("/admin/users", protect, creatorMiddleware, getAllUsers);
+
+// Login status
+router.get("/login-status", userLoginStatus);
 
 export default router;
