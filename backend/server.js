@@ -1,6 +1,10 @@
+import fs from "node:fs";
+
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+
 import connect from "./src/db/connect.js";
 
 dotenv.config();
@@ -18,6 +22,20 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// routes
+const routeFiles = fs.readdirSync("./src/routes");
+routeFiles.forEach((file) => {
+  // use dynamic import
+  import(`./src/routes/${file}`)
+    .then((route) => {
+      app.use("/api/v1", route.default);
+    })
+    .catch((error) => {
+      console.log("Failed to load route file", error.message);
+    });
+});
 
 const server = async () => {
   try {
