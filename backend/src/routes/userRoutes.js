@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  changePassword,
   forgotPassword,
   getUser,
   loginUser,
@@ -48,5 +49,8 @@ router.post("/forgot-password", forgotPassword);
 
 // Reset password
 router.post("/reset-password/:resetPasswordToken", resetPassword);
+
+// change password ---> user must be logged in
+router.patch("/change-password", protect, changePassword);
 
 export default router;
